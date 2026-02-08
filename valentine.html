@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Be My Valentine 💖</title>
+
+<style>
+:root{
+  --pink-bg:#ffe6f0;
+  --pink-card:#ffd1e8;
+  --pink-accent:#ff69b4;
+  --pink-dark:#ff3e9e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(180deg,var(--pink-bg),#fff0f7);
+  font-family:"Comic Sans MS","Trebuchet MS",system-ui;
+  color:#7a1f4b;
+}
+.card{
+  background:var(--pink-card);
+  border-radius:26px;
+  padding:24px;
+  width:92%;
+  max-width:900px;
+  box-shadow:0 20px 40px rgba(255,105,180,.35);
+  position:relative;
+  overflow:hidden;
+}
+.hearts{
+  position:absolute;
+  inset:0;
+  opacity:.15;
+  pointer-events:none;
+  background-image:
+    radial-gradient(circle at 10% 20%, var(--pink-accent) 0 6px, transparent 7px),
+    radial-gradient(circle at 80% 30%, var(--pink-accent) 0 6px, transparent 7px),
+    radial-gradient(circle at 30% 80%, var(--pink-accent) 0 6px, transparent 7px),
+    radial-gradient(circle at 70% 70%, var(--pink-accent) 0 6px, transparent 7px);
+  background-size:120px 120px;
+}
+h1{text-align:center;font-size:clamp(2rem,5vw,3rem)}
+.subtitle{text-align:center;margin-bottom:14px}
+
+.upload{
+  background:#fff;
+  border-radius:18px;
+  padding:16px;
+  border:2px dashed var(--pink-accent);
+}
+.upload label{
+  display:inline-block;
+  background:var(--pink-accent);
+  color:#fff;
+  padding:10px 16px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:700;
+  box-shadow:0 6px 0 var(--pink-dark);
+}
+.upload small{display:block;margin-top:8px;opacity:.7}
+input[type=file]{display:none}
+
+.gallery{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:12px;
+}
+.photo{
+  background:#fff;
+  padding:6px;
+  border-radius:14px;
+  box-shadow:0 10px 20px rgba(0,0,0,.08);
+  position:relative;
+}
+.photo img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  border-radius:10px;
+}
+.remove{
+  position:absolute;
+  top:6px;
+  right:6px;
+  border:none;
+  background:rgba(255,105,180,.9);
+  color:#fff;
+  border-radius:999px;
+  width:28px;
+  height:28px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.ask{text-align:center;margin-top:22px}
+.buttons{
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  flex-wrap:wrap;
+  position:relative;
+}
+.btn{
+  background:var(--pink-accent);
+  color:#fff;
+  padding:12px 22px;
+  border-radius:999px;
+  border:none;
+  font-size:1.1rem;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 0 var(--pink-dark);
+}
+.btn.secondary{
+  background:#ffb3d9;
+  box-shadow:0 8px 0 #ff8cc8;
+  position:relative;
+}
+.result{margin-top:16px;font-size:1.3rem;min-height:2em}
+
+.music{
+  text-align:center;
+  margin-top:12px;
+}
+.music button{
+  background:#fff;
+  border:2px solid var(--pink-accent);
+  border-radius:999px;
+  padding:6px 14px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+footer{text-align:center;margin-top:10px;font-size:.85rem;opacity:.6}
+
+/* confetti */
+.confetti{
+  position:fixed;
+  width:10px;
+  height:10px;
+  background:hotpink;
+  top:-10px;
+  animation:fall 3s linear forwards;
+}
+@keyframes fall{
+  to{transform:translateY(110vh) rotate(360deg);opacity:0}
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <div class="hearts"></div>
+
+  <h1>Will you be my Valentine, <span id="herName">My Love</span>? 💖</h1>
+  <div class="subtitle">I made this just for you 🌸</div>
+
+  <div class="upload">
+    <label for="images">Upload up to 5 cute photos 📸</label>
+    <input id="images" type="file" accept="image/*" multiple />
+    <small>Pick your favorite memories 💕</small>
+    <div class="gallery" id="gallery"></div>
+  </div>
+
+  <div class="ask">
+    <p>So… what do you say? 💘</p>
+    <div class="buttons">
+      <button class="btn" id="yesBtn">YES 💕</button>
+      <button class="btn secondary" id="noBtn">No 🙈</button>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="music">
+    <audio id="song" loop>
+      <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9f36a1c75b.mp3" type="audio/mpeg">
+    </audio>
+    <button onclick="toggleMusic()">🎵 Play / Pause Music</button>
+  </div>
+
+  <footer>Made with 💗</footer>
+</div>
+
+<script>
+/* name prompt */
+const name = prompt("Enter her name 💕");
+if(name){ document.getElementById("herName").textContent = name; }
+
+/* image upload */
+const input = document.getElementById("images");
+const gallery = document.getElementById("gallery");
+const MAX = 5;
+let files = [];
+
+input.addEventListener("change",()=>{
+  for(const f of input.files){
+    if(files.length < MAX) files.push(f);
+  }
+  input.value="";
+  render();
+});
+
+function render(){
+  gallery.innerHTML="";
+  files.forEach((file,i)=>{
+    const r = new FileReader();
+    r.onload=e=>{
+      const d=document.createElement("div");
+      d.className="photo";
+      d.innerHTML=`<img src="${e.target.result}"><button class="remove">×</button>`;
+      d.querySelector(".remove").onclick=()=>{files.splice(i,1);render()};
+      gallery.appendChild(d);
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+/* buttons */
+const result = document.getElementById("result");
+document.getElementById("yesBtn").onclick=()=>{
+  result.textContent="YAY!! 💞 You just made me so happy 💖";
+  confetti();
+};
+const noBtn = document.getElementById("noBtn");
+noBtn.onmouseover=()=>{
+  const x = Math.random()*200-100;
+  const y = Math.random()*120-60;
+  noBtn.style.transform=`translate(${x}px,${y}px)`;
+};
+
+/* confetti */
+function confetti(){
+  for(let i=0;i<80;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=["#ff69b4","#ffb3d9","#ffd1e8"][Math.floor(Math.random()*3)];
+    c.style.animationDuration=2+Math.random()*2+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  }
+}
+
+/* music */
+function toggleMusic(){
+  const s=document.getElementById("song");
+  s.paused?s.play():s.pause();
+}
+</script>
+</body>
+</html>
